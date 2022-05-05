@@ -13,11 +13,11 @@
 
 void RegisterPlugins(flutter::PluginRegistry* registry) {
   DesktopDropPluginRegisterWithRegistrar(
-      registry->GetRegistrarForPlugin("DesktopDropPlugin"));
+    registry->GetRegistrarForPlugin("DesktopDropPlugin"));
   DesktopWindowPluginRegisterWithRegistrar(
-      registry->GetRegistrarForPlugin("DesktopWindowPlugin"));
+    registry->GetRegistrarForPlugin("DesktopWindowPlugin"));
   PasteboardPluginRegisterWithRegistrar(
-      registry->GetRegistrarForPlugin("PasteboardPlugin"));
+    registry->GetRegistrarForPlugin("PasteboardPlugin"));
   UrlLauncherWindowsRegisterWithRegistrar(
-      registry->GetRegistrarForPlugin("UrlLauncherWindows"));
+    registry->GetRegistrarForPlugin("UrlLauncherWindows"));
 }

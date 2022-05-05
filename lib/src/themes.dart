@@ -7,326 +7,326 @@ import 'package:flutter/material.dart';
 import 'default_vscode_theme.dart';
 
 class ThemesTheme{
-    ThemeData libThemeData;
-    CommandPaletteStyle commandPaletteStyleData;
-    TreeViewTheme treeViewThemeData;
+  ThemeData libThemeData;
+  CommandPaletteStyle commandPaletteStyleData;
+  TreeViewTheme treeViewThemeData;
 
-    ThemesTheme({
-        required this.libThemeData,
-        required this.commandPaletteStyleData,
-        required this.treeViewThemeData,
-    });
+  ThemesTheme({
+    required this.libThemeData,
+    required this.commandPaletteStyleData,
+    required this.treeViewThemeData,
+  });
 }
 
 class ThemesProvider extends ChangeNotifier{
 
-    // map for all loaded themes
-    Map<String, ThemesTheme> _themes = {};
+  // map for all loaded themes
+  Map<String, ThemesTheme> _themes = {};
 
-    // default theme
-    static const String _defaultThemeKey = "Owlet (Palenight)";
+  // default theme
+  static const String _defaultThemeKey = "Owlet (Palenight)";
 
-    // current theme
-    String _activeThemeKey = _defaultThemeKey;
+  // current theme
+  String _activeThemeKey = _defaultThemeKey;
 
-    // themes directory, passed via constructor
-    late String _themesDir;
+  // themes directory, passed via constructor
+  late String _themesDir;
 
-    // -------------------------------------- Public calls ------------------------ //
+  // -------------------------------------- Public calls ------------------------ //
 
-    // set theme
-    setTheme(String name){
-        ThemesTheme? newTheme = _themes[name];
+  // set theme
+  setTheme(String name){
+    ThemesTheme? newTheme = _themes[name];
 
-        if(newTheme != null){
-            _activeThemeKey = name;
-            notifyListeners();
-        }   
-        else{
-            return;
-        }
+    if(newTheme != null){
+      _activeThemeKey = name;
+      notifyListeners();
+    }   
+    else{
+      return;
+    }
+  }
+
+  // get current theme
+  ThemesTheme getTheme(){
+    // returns the current theme or a guaranteed default theme if the former is null
+    return _themes[_activeThemeKey] ?? (_themes[_defaultThemeKey]!);
+  }
+
+  // get theme list
+  List<String> getThemeNameList(){
+    List<String> list = [];
+
+    for(var theme in _themes.keys){
+      list.add(theme);
+    }
+    
+    return list;
+  }
+
+  // constructor
+  ThemesProvider({required String themesDir, required String startTheme}){
+    _activeThemeKey = startTheme;
+    _themesDir = themesDir;
+    buildThemes();
+  }
+
+  // read theme files
+  buildThemes(){
+    if(!(Directory(_themesDir).existsSync())){
+      exit(-1);
     }
 
-    // get current theme
-    ThemesTheme getTheme(){
-        // returns the current theme or a guaranteed default theme if the former is null
-        return _themes[_activeThemeKey] ?? (_themes[_defaultThemeKey]!);
-    }
+    // for every json theme file in the themes directory
+    for(var file in Directory(_themesDir).listSync(followLinks: false, recursive: false)){
+      String themeString = File(file.path).readAsStringSync();
+      late Map<String, dynamic> theme;
+      
+      try{
+        // special chars         
+        themeString = themeString.replaceAllMapped(RegExp(r"(://)|[$]", multiLine: false, caseSensitive: false), 
+          (Match m) => ""
+        );
 
-    // get theme list
-    List<String> getThemeNameList(){
-        List<String> list = [];
+        // remove comments
+        themeString = themeString.replaceAllMapped(RegExp(r"//.*", multiLine: false, caseSensitive: false), 
+          (Match m) => ""
+        );
 
-        for(var theme in _themes.keys){
-            list.add(theme);
-        }
+        // remove leading commas on last child of array/object
+        themeString = themeString.replaceAllMapped(RegExp(r",([\n\s]*(\}|\]))", multiLine: true, caseSensitive: false), 
+          (Match m) => "${m[1]}"
+        );
         
-        return list;
-    }
+        theme = jsonDecode(themeString);
+      }
+      catch(e){
+        continue;
+      }
 
-    // constructor
-    ThemesProvider({required String themesDir, required String startTheme}){
-        _activeThemeKey = startTheme;
-        _themesDir = themesDir;
-        buildThemes();
-    }
+      var name = theme["name"] ?? p.basenameWithoutExtension(file.path);
 
-    // read theme files
-    buildThemes(){
-        if(!(Directory(_themesDir).existsSync())){
-            exit(-1);
-        }
+    
+      // save theme in array with the key same as "name" in json or filename without extension
+      _themes[name] = ThemesTheme(
+        libThemeData: ThemeData(
 
-        // for every json theme file in the themes directory
-        for(var file in Directory(_themesDir).listSync(followLinks: false, recursive: false)){
-            String themeString = File(file.path).readAsStringSync();
-            late Map<String, dynamic> theme;
+          brightness: theme["type"] == "dark" ? Brightness.dark : Brightness.light,
+          // appBarTheme: const AppBarTheme(backgroundColor: Colors.black),
+          // scaffoldBackgroundColor: const Color(0xFF121212),
+
+          backgroundColor: _getThemeColor(theme,"editor.background"),
+          primaryColor:   _getThemeColor(theme,"editor.background"),
+
+          hoverColor:   _getThemeColor(theme,"activityBar.foreground"),
+          focusColor:   _getThemeColor(theme,"activityBar.foreground"),
+          highlightColor: _getThemeColor(theme,"activityBar.foreground"),
+          dividerColor:   _getThemeColor(theme,"activityBar.inactiveForeground"),
+
+          // iconTheme: const IconThemeData().copyWith(color: const Color(0xFF4d4f5d)),
+          iconTheme: IconThemeData(
+            color: _getThemeColor(theme,"activityBar.inactiveForeground"),
+            opacity: 100,
+            size: 25,
+          ),
+
+          tooltipTheme: TooltipThemeData(
+            textStyle: TextStyle(
+              color: _getThemeColor(theme,"editor.foreground"),
+              fontSize: 13.0,
+              fontWeight: FontWeight.normal,
+              letterSpacing: 0
+            ),
+            decoration: BoxDecoration(
+              color: _getThemeColor(theme,"sideBar.background"),
+              border: Border.all(
+                width: 1,
+                color: _getThemeColor(theme,"activityBar.inactiveForeground"),
+              )
+            ),
+          ),
+
+          colorScheme: ColorScheme(
+            brightness: theme["type"] == "dark" ? Brightness.dark : Brightness.light,
             
-            try{
-                // special chars                 
-                themeString = themeString.replaceAllMapped(RegExp(r"(://)|[$]", multiLine: false, caseSensitive: false), 
-                    (Match m) => ""
-                );
+            error: _getThemeColor(theme,"sideBar.background"),
+            onError: _getThemeColor(theme,"errorForeground"),
 
-                // remove comments
-                themeString = themeString.replaceAllMapped(RegExp(r"//.*", multiLine: false, caseSensitive: false), 
-                    (Match m) => ""
-                );
+            background: _getThemeColor(theme,"editor.background"),
+            onBackground: _getThemeColor(theme,"editor.foreground"),
 
-                // remove leading commas on last child of array/object
-                themeString = themeString.replaceAllMapped(RegExp(r",([\n\s]*(\}|\]))", multiLine: true, caseSensitive: false), 
-                    (Match m) => "${m[1]}"
-                );
-                
-                theme = jsonDecode(themeString);
-            }
-            catch(e){
-                continue;
-            }
+            primary: _getThemeColor(theme,"activityBar.background"),
+            onPrimary: _getThemeColor(theme,"activityBar.foreground"),
+            inversePrimary: _getThemeColor(theme,"list.highlightForeground"),
 
-            var name = theme["name"] ?? p.basenameWithoutExtension(file.path);
+            secondary: _getThemeColor(theme,"sideBar.background"),
+            onSecondary: _getThemeColor(theme,"sideBar.background"),
 
-        
-            // save theme in array with the key same as "name" in json or filename without extension
-            _themes[name] = ThemesTheme(
-                libThemeData: ThemeData(
+            // tertiary: _getThemeColor(theme,"list.activeSelectionBackground"),
+            // onTertiary: _getThemeColor(theme,"list.activeSelectionForeground"),
+            // tertiary: _getThemeColor(theme,"statusBar.debuggingBackground"),
+            tertiary: _getThemeColor(theme,"statusBar.background"),
+            onTertiary: _getThemeColor(theme,"statusBar.foreground"),
 
-                    brightness: theme["type"] == "dark" ? Brightness.dark : Brightness.light,
-                    // appBarTheme: const AppBarTheme(backgroundColor: Colors.black),
-                    // scaffoldBackgroundColor: const Color(0xFF121212),
+            surface: _getThemeColor(theme,"editor.background"),
+            onSurface: _getThemeColor(theme,"editor.foreground"),
 
-                    backgroundColor: _getThemeColor(theme,"editor.background"),
-                    primaryColor:   _getThemeColor(theme,"editor.background"),
+          ),
 
-                    hoverColor:     _getThemeColor(theme,"activityBar.foreground"),
-                    focusColor:     _getThemeColor(theme,"activityBar.foreground"),
-                    highlightColor: _getThemeColor(theme,"activityBar.foreground"),
-                    dividerColor:   _getThemeColor(theme,"activityBar.inactiveForeground"),
+          inputDecorationTheme: InputDecorationTheme(
+            filled: true,
+            fillColor: _getThemeColor(theme,"editor.background"),
 
-                    // iconTheme: const IconThemeData().copyWith(color: const Color(0xFF4d4f5d)),
-                    iconTheme: IconThemeData(
-                        color: _getThemeColor(theme,"activityBar.inactiveForeground"),
-                        opacity: 100,
-                        size: 25,
-                    ),
+            hintStyle: TextStyle(
+              color: _getThemeColor(theme,"editor.foreground"),
+              fontSize: 13.0,
+              letterSpacing: 0,
+              fontWeight: FontWeight.normal
+            ),
+            labelStyle: TextStyle(
+              color: _getThemeColor(theme,"editor.foreground"),
+              fontSize: 13.0,
+              letterSpacing: 0,
+              fontWeight: FontWeight.normal
+            ),
+          ),
 
-                    tooltipTheme: TooltipThemeData(
-                        textStyle: TextStyle(
-                            color: _getThemeColor(theme,"editor.foreground"),
-                            fontSize: 13.0,
-                            fontWeight: FontWeight.normal,
-                            letterSpacing: 0
-                        ),
-                        decoration: BoxDecoration(
-                            color: _getThemeColor(theme,"sideBar.background"),
-                            border: Border.all(
-                                width: 1,
-                                color: _getThemeColor(theme,"activityBar.inactiveForeground"),
-                            )
-                        ),
-                    ),
+          textButtonTheme: TextButtonThemeData(
+            style: ButtonStyle(
+              backgroundColor:  MaterialStateProperty.all<Color>(_getThemeColor(theme,"editor.background")),
+              foregroundColor:  MaterialStateProperty.all<Color>(_getThemeColor(theme,"editor.foreground")),
+              overlayColor:     MaterialStateProperty.all<Color>(_getThemeColor(theme,"list.activeSelectionBackground")),
+              elevation:      MaterialStateProperty.all<double>(1),
+              shape:        MaterialStateProperty.all<RoundedRectangleBorder>(RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(2),
+              )),  
+            )
+          ),
 
-                    colorScheme: ColorScheme(
-                        brightness: theme["type"] == "dark" ? Brightness.dark : Brightness.light,
-                        
-                        error: _getThemeColor(theme,"sideBar.background"),
-                        onError: _getThemeColor(theme,"errorForeground"),
+          scrollbarTheme: ScrollbarThemeData(
+            thumbColor: MaterialStateProperty.all<Color>(_getThemeColor(theme,"list.activeSelectionBackground")),
+          ),
 
-                        background: _getThemeColor(theme,"editor.background"),
-                        onBackground: _getThemeColor(theme,"editor.foreground"),
+          textTheme: TextTheme(
+            button: TextStyle(
+              color: _getThemeColor(theme,"editor.foreground"),
+              fontSize: 13.0,
+              letterSpacing: 0,
+              fontWeight: FontWeight.normal
+            ),
+            bodyText2: TextStyle(
+              color: _getThemeColor(theme,"editor.foreground"),
+              fontSize: 13.0,
+              letterSpacing: 0,
+              fontWeight: FontWeight.normal
+            ),
+            subtitle1: TextStyle(
+              color: _getThemeColor(theme,"editor.foreground"),
+              fontSize: 13.0,
+              letterSpacing: 0,
+              fontWeight: FontWeight.normal
+            ),
+            subtitle2: TextStyle(
+              color: _getThemeColor(theme,"editor.foreground"),
+              fontSize: 10.0,
+              fontWeight: FontWeight.normal
+            ),
+          )
 
-                        primary: _getThemeColor(theme,"activityBar.background"),
-                        onPrimary: _getThemeColor(theme,"activityBar.foreground"),
-                        inversePrimary: _getThemeColor(theme,"list.highlightForeground"),
+        ),
 
-                        secondary: _getThemeColor(theme,"sideBar.background"),
-                        onSecondary: _getThemeColor(theme,"sideBar.background"),
+        commandPaletteStyleData: CommandPaletteStyle(
+          elevation: 5,
+          borderRadius: BorderRadius.zero,
+          commandPaletteBarrierColor: Colors.black26,
+          highlightSearchSubstring: true,
 
-                        // tertiary: _getThemeColor(theme,"list.activeSelectionBackground"),
-                        // onTertiary: _getThemeColor(theme,"list.activeSelectionForeground"),
-                        // tertiary: _getThemeColor(theme,"statusBar.debuggingBackground"),
-                        tertiary: _getThemeColor(theme,"statusBar.background"),
-                        onTertiary: _getThemeColor(theme,"statusBar.foreground"),
+          actionLabelTextStyle: TextStyle(
+            color: _getThemeColor(theme,"editor.foreground"),
+            fontSize: 13.0,
+            letterSpacing: 0,
+            fontWeight: FontWeight.normal
+          ),
+          highlightedLabelTextStyle: TextStyle(
+            color: _getThemeColor(theme,"list.highlightForeground"),
+            fontSize: 13.0,
+            letterSpacing: 0,
+            fontWeight: FontWeight.normal
+          ),
 
-                        surface: _getThemeColor(theme,"editor.background"),
-                        onSurface: _getThemeColor(theme,"editor.foreground"),
+          actionColor: _getThemeColor(theme,"sideBar.background"),
+          selectedColor: _getThemeColor(theme,"list.activeSelectionBackground"),
 
-                    ),
+          textFieldInputDecoration: const InputDecoration(
+            hintText: ">...",
+            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+          )
+        ),
 
-                    inputDecorationTheme: InputDecorationTheme(
-                        filled: true,
-                        fillColor: _getThemeColor(theme,"editor.background"),
-
-                        hintStyle: TextStyle(
-                            color: _getThemeColor(theme,"editor.foreground"),
-                            fontSize: 13.0,
-                            letterSpacing: 0,
-                            fontWeight: FontWeight.normal
-                        ),
-                        labelStyle: TextStyle(
-                            color: _getThemeColor(theme,"editor.foreground"),
-                            fontSize: 13.0,
-                            letterSpacing: 0,
-                            fontWeight: FontWeight.normal
-                        ),
-                    ),
-
-                    textButtonTheme: TextButtonThemeData(
-                        style: ButtonStyle(
-                            backgroundColor:    MaterialStateProperty.all<Color>(_getThemeColor(theme,"editor.background")),
-                            foregroundColor:    MaterialStateProperty.all<Color>(_getThemeColor(theme,"editor.foreground")),
-                            overlayColor:       MaterialStateProperty.all<Color>(_getThemeColor(theme,"list.activeSelectionBackground")),
-                            elevation:          MaterialStateProperty.all<double>(1),
-                            shape:              MaterialStateProperty.all<RoundedRectangleBorder>(RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(2),
-                            )),  
-                        )
-                    ),
-
-                    scrollbarTheme: ScrollbarThemeData(
-                        thumbColor: MaterialStateProperty.all<Color>(_getThemeColor(theme,"list.activeSelectionBackground")),
-                    ),
-
-                    textTheme: TextTheme(
-                        button: TextStyle(
-                            color: _getThemeColor(theme,"editor.foreground"),
-                            fontSize: 13.0,
-                            letterSpacing: 0,
-                            fontWeight: FontWeight.normal
-                        ),
-                        bodyText2: TextStyle(
-                            color: _getThemeColor(theme,"editor.foreground"),
-                            fontSize: 13.0,
-                            letterSpacing: 0,
-                            fontWeight: FontWeight.normal
-                        ),
-                        subtitle1: TextStyle(
-                            color: _getThemeColor(theme,"editor.foreground"),
-                            fontSize: 13.0,
-                            letterSpacing: 0,
-                            fontWeight: FontWeight.normal
-                        ),
-                        subtitle2: TextStyle(
-                            color: _getThemeColor(theme,"editor.foreground"),
-                            fontSize: 10.0,
-                            fontWeight: FontWeight.normal
-                        ),
-                    )
-
-                ),
-
-                commandPaletteStyleData: CommandPaletteStyle(
-                    elevation: 5,
-                    borderRadius: BorderRadius.zero,
-                    commandPaletteBarrierColor: Colors.black26,
-                    highlightSearchSubstring: true,
-
-                    actionLabelTextStyle: TextStyle(
-                        color: _getThemeColor(theme,"editor.foreground"),
-                        fontSize: 13.0,
-                        letterSpacing: 0,
-                        fontWeight: FontWeight.normal
-                    ),
-                    highlightedLabelTextStyle: TextStyle(
-                        color: _getThemeColor(theme,"list.highlightForeground"),
-                        fontSize: 13.0,
-                        letterSpacing: 0,
-                        fontWeight: FontWeight.normal
-                    ),
-
-                    actionColor: _getThemeColor(theme,"sideBar.background"),
-                    selectedColor: _getThemeColor(theme,"list.activeSelectionBackground"),
-
-                    textFieldInputDecoration: const InputDecoration(
-                        hintText: ">...",
-                        contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
-                    )
-                ),
-
-                treeViewThemeData: TreeViewTheme(
-                    expanderTheme: ExpanderThemeData(
-                        type: ExpanderType.chevron,
-                        color: _getThemeColor(theme,"icon.foreground"),
-                        size: 20,
-                    ),
-                    iconPadding: 5,
-                    iconTheme: IconThemeData(
-                        size: 20,
-                        color: _getThemeColor(theme,"icon.foreground"),
-                    ),
-                    verticalSpacing: 2,
-                    labelStyle: TextStyle(
-                        color: _getThemeColor(theme,"editor.foreground"),
-                        fontSize: 13.0,
-                        letterSpacing: 0,
-                        fontWeight: FontWeight.normal
-                    ),
-                    parentLabelStyle: TextStyle(
-                        color: _getThemeColor(theme,"editor.foreground"),
-                        fontSize: 13.0,
-                        letterSpacing: 0,
-                        fontWeight: FontWeight.bold
-                    ),
-                    labelOverflow: TextOverflow.clip,
-                    parentLabelOverflow: TextOverflow.clip,
-                )
-            );
-        }
-
-        notifyListeners();
+        treeViewThemeData: TreeViewTheme(
+          expanderTheme: ExpanderThemeData(
+            type: ExpanderType.chevron,
+            color: _getThemeColor(theme,"icon.foreground"),
+            size: 20,
+          ),
+          iconPadding: 5,
+          iconTheme: IconThemeData(
+            size: 20,
+            color: _getThemeColor(theme,"icon.foreground"),
+          ),
+          verticalSpacing: 2,
+          labelStyle: TextStyle(
+            color: _getThemeColor(theme,"editor.foreground"),
+            fontSize: 13.0,
+            letterSpacing: 0,
+            fontWeight: FontWeight.normal
+          ),
+          parentLabelStyle: TextStyle(
+            color: _getThemeColor(theme,"editor.foreground"),
+            fontSize: 13.0,
+            letterSpacing: 0,
+            fontWeight: FontWeight.bold
+          ),
+          labelOverflow: TextOverflow.clip,
+          parentLabelOverflow: TextOverflow.clip,
+        )
+      );
     }
 
-    // -------------------------------------- Private calls ----------------------- //
+    notifyListeners();
+  }
 
-    // converto color in hex string "#ffffff" to integer
-    Color _hex2Color(String hex){
-        int num = 0;
-        
-        // #FFFFFFFF case
-        if(hex.length >= 9){
-            hex = hex.replaceAll("#", "");
-            num = int.parse(hex, radix:16);
-            num = ((0xffffff00 & num) >> 8) | ((0x000000ff & num) << 3*8);
-        }
-        // #FFFFFF case
-        else{
-            hex = hex.replaceAll("#", "FF");
-            num = int.parse(hex, radix:16);
-        }
-        
-        return Color(num);
+  // -------------------------------------- Private calls ----------------------- //
+
+  // converto color in hex string "#ffffff" to integer
+  Color _hex2Color(String hex){
+    int num = 0;
+    
+    // #FFFFFFFF case
+    if(hex.length >= 9){
+      hex = hex.replaceAll("#", "");
+      num = int.parse(hex, radix:16);
+      num = ((0xffffff00 & num) >> 8) | ((0x000000ff & num) << 3*8);
     }
-
-    // get color from json file an return as Color
-    Color _getThemeColor(Map<String, dynamic> theme, String name){
-        String? hexColor = theme["colors"] == null ? null : theme["colors"][name];
-
-        if(hexColor == null){
-            return defaultVscodeTheme[name] ?? Colors.black;
-        }
-        else{
-            return _hex2Color(hexColor);
-        }
+    // #FFFFFF case
+    else{
+      hex = hex.replaceAll("#", "FF");
+      num = int.parse(hex, radix:16);
     }
+    
+    return Color(num);
+  }
+
+  // get color from json file an return as Color
+  Color _getThemeColor(Map<String, dynamic> theme, String name){
+    String? hexColor = theme["colors"] == null ? null : theme["colors"][name];
+
+    if(hexColor == null){
+      return defaultVscodeTheme[name] ?? Colors.black;
+    }
+    else{
+      return _hex2Color(hexColor);
+    }
+  }
 
 }

@@ -1,27 +1,27 @@
 {
-    "name": "English",
-    
-    "toolbarToolsLabel": "Tools",
-    "toolbarToolsTooltip": "Program tools",
-    "toolbarToolsEntryCommandPalette": "Command Palette",
+  "name": "English",
+  
+  "toolbarToolsLabel": "Tools",
+  "toolbarToolsTooltip": "Program tools",
+  "toolbarToolsEntryCommandPalette": "Command Palette",
 
-    "sidebarActionExplorerTooltip": "File explorer",
-    "sidebarActionSearchTooltip": "Search and replace",
-    "sidebarActionToolsTooltip": "Tools",
-    "sidebarActionDebugTooltip": "Debug and watch",
-    "sidebarActionSettingsTooltip": "Settings (text file)",
-    "sidebarActionNoneTooltip": "Unknow!",
-    
-    "explorerClosedText": "No folder currently is opened",
-    "explorerClosedButtonLabel": "Open folder",
-    "explorerClosedFilePickDialogueTitle": "Select a folder to open",
-    "explorerOpenFolderPrefix": "Opened: ",
+  "sidebarActionExplorerTooltip": "File explorer",
+  "sidebarActionSearchTooltip": "Search and replace",
+  "sidebarActionToolsTooltip": "Tools",
+  "sidebarActionDebugTooltip": "Debug and watch",
+  "sidebarActionSettingsTooltip": "Settings (text file)",
+  "sidebarActionNoneTooltip": "Unknow!",
+  
+  "explorerClosedText": "No folder currently is opened",
+  "explorerClosedButtonLabel": "Open folder",
+  "explorerClosedFilePickDialogueTitle": "Select a folder to open",
+  "explorerOpenFolderPrefix": "Opened: ",
 
-    "commandPaletteInputText": "Type a command ...",
-    "commandLocaleChangeLabel": "Language: Change language",
-    "commandThemeChangeLabel": "Color: Change theme",
-    "commandSidebarActionLabel": "Sidebar: Actions",
-    "commandExplorerOpenLabel": "Explorer: Open folder",
-    "commandExplorerCloseLabel": "Explorer: Close folder",
-    "commandReloadLabel": "Application: Reload resources"
+  "commandPaletteInputText": "Type a command ...",
+  "commandLocaleChangeLabel": "Language: Change language",
+  "commandThemeChangeLabel": "Color: Change theme",
+  "commandSidebarActionLabel": "Sidebar: Actions",
+  "commandExplorerOpenLabel": "Explorer: Open folder",
+  "commandExplorerCloseLabel": "Explorer: Close folder",
+  "commandReloadLabel": "Application: Reload resources"
 }
