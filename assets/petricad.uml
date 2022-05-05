@@ -1,0 +1,267 @@
+@startuml
+set namespaceSeparator ::
+
+class "petricad::src::themes.dart::ThemesTheme" {
+  +ThemeData libThemeData
+  +CommandPaletteStyle commandPaletteStyleData
+  +TreeViewTheme treeViewThemeData
+}
+
+"petricad::src::themes.dart::ThemesTheme" o-- "flutter::src::material::theme_data.dart::ThemeData"
+"petricad::src::themes.dart::ThemesTheme" o-- "command_palette::src::models::command_palette_style.dart::CommandPaletteStyle"
+"petricad::src::themes.dart::ThemesTheme" o-- "flutter_treeview::src::tree_view_theme.dart::TreeViewTheme"
+
+class "petricad::src::themes.dart::ThemesProvider" {
+  -Map<String, ThemesTheme> _themes
+  {static} -String _defaultThemeKey
+  -String _activeThemeKey
+  -String _themesDir
+  +dynamic setTheme()
+  +ThemesTheme getTheme()
+  +List<String> getThemeNameList()
+  +dynamic buildThemes()
+  -Color _hex2Color()
+  -Color _getThemeColor()
+}
+
+"flutter::src::foundation::change_notifier.dart::ChangeNotifier" <|-- "petricad::src::themes.dart::ThemesProvider"
+
+class "petricad::src::platforminfo.dart::PlatformInfo" {
+  {static} +bool isDesktop()
+  {static} +bool isMobile()
+  {static} +bool isWeb()
+  {static} +PlatformType getPlatform()
+}
+
+class "petricad::src::platforminfo.dart::PlatformType" {
+  +int index
+  {static} +List<PlatformType> values
+  {static} +PlatformType web
+  {static} +PlatformType ios
+  {static} +PlatformType android
+  {static} +PlatformType macos
+  {static} +PlatformType fuchsia
+  {static} +PlatformType linux
+  {static} +PlatformType windows
+  {static} +PlatformType unknown
+}
+
+"petricad::src::platforminfo.dart::PlatformType" o-- "petricad::src::platforminfo.dart::PlatformType"
+"dart::core::Enum" <|-- "petricad::src::platforminfo.dart::PlatformType"
+
+class "petricad::src::filemgr.dart::Filemgr" {
+  -Map<String, String> _dirs
+  -Map<String, String> _files
+  {static} -String _windowsHome
+  {static} -String _linuxHome
+  -RandomAccessFile? _logFile
+  +dynamic addStdDir()
+  +dynamic addDir()
+  +dynamic addDirToDir()
+  +String? getDirPath()
+  +dynamic addNewFile()
+  +String? getFilePath()
+  +dynamic addLogFile()
+  +dynamic logInfo()
+  +dynamic logWarning()
+  +dynamic logError()
+}
+
+"petricad::src::filemgr.dart::Filemgr" o-- "dart::io::RandomAccessFile"
+"flutter::src::foundation::change_notifier.dart::ChangeNotifier" <|-- "petricad::src::filemgr.dart::Filemgr"
+
+class "petricad::src::sidebar_actions.dart::SidebarAction" {
+  +SidebarActionEnum type
+  +Icon icon
+  +String tooltip
+  +ShortcutActivator? shortcut
+  +bool openSidePanel
+  +Widget? sidePanelWidget
+  +void Function(BuildContext)? onPress
+  +bool toTheBottom
+}
+
+"petricad::src::sidebar_actions.dart::SidebarAction" o-- "petricad::src::sidebar_actions.dart::SidebarActionEnum"
+"petricad::src::sidebar_actions.dart::SidebarAction" o-- "flutter::src::widgets::icon.dart::Icon"
+"petricad::src::sidebar_actions.dart::SidebarAction" o-- "flutter::src::widgets::shortcuts.dart::ShortcutActivator"
+"petricad::src::sidebar_actions.dart::SidebarAction" o-- "flutter::src::widgets::framework.dart::Widget"
+"petricad::src::sidebar_actions.dart::SidebarAction" o-- "null::void Function(BuildContext)"
+
+class "petricad::src::sidebar_actions.dart::SidebarActionsProvider" {
+  +List<SidebarAction> actions
+  +dynamic update()
+}
+
+"flutter::src::foundation::change_notifier.dart::ChangeNotifier" <|-- "petricad::src::sidebar_actions.dart::SidebarActionsProvider"
+
+class "petricad::src::sidebar_actions.dart::SidebarActionEnum" {
+  +int index
+  {static} +List<SidebarActionEnum> values
+  {static} +SidebarActionEnum explorer
+  {static} +SidebarActionEnum search
+  {static} +SidebarActionEnum tools
+  {static} +SidebarActionEnum debug
+  {static} +SidebarActionEnum settings
+  {static} +SidebarActionEnum none
+}
+
+"petricad::src::sidebar_actions.dart::SidebarActionEnum" o-- "petricad::src::sidebar_actions.dart::SidebarActionEnum"
+"dart::core::Enum" <|-- "petricad::src::sidebar_actions.dart::SidebarActionEnum"
+
+class "petricad::src::config.dart::ConfigProvider" {
+  -Map<String, dynamic> _config
+  -String _filename
+  +dynamic buildConfig()
+  +dynamic setConfig()
+  +T? getConfig()
+  -dynamic _save()
+  -T? _getNestedMapValue()
+  -dynamic _setNestedMapValue()
+}
+
+"flutter::src::foundation::change_notifier.dart::ChangeNotifier" <|-- "petricad::src::config.dart::ConfigProvider"
+
+class "petricad::src::cache.dart::CacheProvider" {
+  -Map<String, dynamic> _cache
+  -String _filename
+  +dynamic buildCache()
+  +dynamic setValue()
+  +T? getValue()
+  -dynamic _save()
+  -T? _getNestedMapValue()
+  -dynamic _setNestedMapValue()
+}
+
+"flutter::src::foundation::change_notifier.dart::ChangeNotifier" <|-- "petricad::src::cache.dart::CacheProvider"
+
+class "petricad::src::actions.dart::SidebarActionIntent" {
+  +SidebarAction action
+  +BuildContext context
+}
+
+"petricad::src::actions.dart::SidebarActionIntent" o-- "petricad::src::sidebar_actions.dart::SidebarAction"
+"petricad::src::actions.dart::SidebarActionIntent" o-- "flutter::src::widgets::framework.dart::BuildContext"
+"flutter::src::widgets::actions.dart::Intent" <|-- "petricad::src::actions.dart::SidebarActionIntent"
+
+class "petricad::src::actions.dart::SidebarToggleOpenIntent" {
+  +BuildContext context
+}
+
+"petricad::src::actions.dart::SidebarToggleOpenIntent" o-- "flutter::src::widgets::framework.dart::BuildContext"
+"flutter::src::widgets::actions.dart::Intent" <|-- "petricad::src::actions.dart::SidebarToggleOpenIntent"
+
+class "petricad::src::actions.dart::ReloadIntent" {
+  +BuildContext context
+}
+
+"petricad::src::actions.dart::ReloadIntent" o-- "flutter::src::widgets::framework.dart::BuildContext"
+"flutter::src::widgets::actions.dart::Intent" <|-- "petricad::src::actions.dart::ReloadIntent"
+
+class "petricad::main.dart::App" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "petricad::main.dart::App"
+
+class "petricad::widgets::iconbuttonsimple.dart::IconButtonSimple" {
+  +Icon icon
+  +bool pressed
+  +double? iconSize
+  +String? tooltip
+  +double selectedMarkerWidth
+  +AlignmentGeometry? alignment
+  +EdgeInsetsGeometry padding
+  +Color? color
+  +Color? highlightColor
+  +void Function()? onPressed
+  +State<IconButtonSimple> createState()
+}
+
+"petricad::widgets::iconbuttonsimple.dart::IconButtonSimple" o-- "flutter::src::widgets::icon.dart::Icon"
+"petricad::widgets::iconbuttonsimple.dart::IconButtonSimple" o-- "flutter::src::painting::alignment.dart::AlignmentGeometry"
+"petricad::widgets::iconbuttonsimple.dart::IconButtonSimple" o-- "flutter::src::painting::edge_insets.dart::EdgeInsetsGeometry"
+"petricad::widgets::iconbuttonsimple.dart::IconButtonSimple" o-- "dart::ui::Color"
+"petricad::widgets::iconbuttonsimple.dart::IconButtonSimple" o-- "null::void Function()"
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "petricad::widgets::iconbuttonsimple.dart::IconButtonSimple"
+
+class "petricad::widgets::iconbuttonsimple.dart::_IconButtonSimpleState" {
+  -bool _hovered
+  +Widget build()
+  -Icon _iconModify()
+  -Color _colorHighlight()
+  -Color _colorMarker()
+  -void _onEnter()
+  -void _onExit()
+  -void _onTap()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "petricad::widgets::iconbuttonsimple.dart::_IconButtonSimpleState"
+
+class "petricad::widgets::statusbar.dart::Statusbar" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "petricad::widgets::statusbar.dart::Statusbar"
+
+class "petricad::widgets::editor.dart::Editor" {
+  +bool leftBorderActive
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "petricad::widgets::editor.dart::Editor"
+
+class "petricad::widgets::toolbar.dart::Toolbar" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "petricad::widgets::toolbar.dart::Toolbar"
+
+class "petricad::widgets::sidebar.dart::Sidebar" {
+  +State<Sidebar> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "petricad::widgets::sidebar.dart::Sidebar"
+
+class "petricad::widgets::sidebar.dart::_SidebarState" {
+  -bool _isOpen
+  -SidebarActionEnum? _currentItem
+  -MultiSplitViewController _splitViewController
+  +Widget build()
+}
+
+"petricad::widgets::sidebar.dart::_SidebarState" o-- "petricad::src::sidebar_actions.dart::SidebarActionEnum"
+"petricad::widgets::sidebar.dart::_SidebarState" o-- "multi_split_view::src::multi_split_view.dart::MultiSplitViewController"
+"flutter::src::widgets::framework.dart::State" <|-- "petricad::widgets::sidebar.dart::_SidebarState"
+
+class "petricad::widgets::sidebar.dart::Tray" {
+  +SidebarActionEnum? currentItem
+  +Widget build()
+  -List<Widget> _buildTrayActions()
+}
+
+"petricad::widgets::sidebar.dart::Tray" o-- "petricad::src::sidebar_actions.dart::SidebarActionEnum"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "petricad::widgets::sidebar.dart::Tray"
+
+class "petricad::widgets::sidebar.dart::Panel" {
+  +Widget? child
+  +Widget build()
+}
+
+"petricad::widgets::sidebar.dart::Panel" o-- "flutter::src::widgets::framework.dart::Widget"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "petricad::widgets::sidebar.dart::Panel"
+
+class "petricad::widgets::explorer.dart::Explorer" {
+  +State<Explorer> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "petricad::widgets::explorer.dart::Explorer"
+
+class "petricad::widgets::explorer.dart::_ExplorerState" {
+  -String? _currentPath
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "petricad::widgets::explorer.dart::_ExplorerState"
+
+
+@enduml
